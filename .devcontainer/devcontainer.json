@@ -1,0 +1,48 @@
+{
+    "name": "offlinecv-uploader",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "app",
+    "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  
+    "customizations": {
+      "vscode": {
+        "extensions": [
+          "ms-azuretools.vscode-docker",
+          "donjayamanne.python-extension-pack",
+          "esbenp.prettier-vscode",
+          "mintlify.document",
+          "ms-python.black-formatter",
+          "intellsmi.comment-translate",
+          "cweijan.vscode-database-client2",
+          "cweijan.dbclient-jdbc",
+          "monosans.djlint",
+          "mhutchie.git-graph",
+          "donjayamanne.githistory",
+          "GitHub.copilot",
+          "GitHub.copilot-chat",
+          "bierner.github-markdown-preview",
+          "codezombiech.gitignore",
+          "eamodio.gitlens",
+          "hancel.google-translate",
+          "VisualStudioExptTeam.vscodeintellicode",
+          "yzhang.markdown-all-in-one",
+          "bierner.markdown-checkbox",
+          "bierner.markdown-emoji",
+          "bierner.markdown-footnotes",
+          "bierner.markdown-preview-github-styles",
+          "bierner.markdown-mermaid",
+          "bierner.markdown-yaml-preamble",
+          "GrapeCity.gc-excelviewer",
+          "charliermarsh.ruff",
+          "HashiCorp.terraform"
+        ]
+      }
+    },
+    "mounts": [
+      "source=${localEnv:HOME}${localEnv:USERPROFILE}/.aws/,target=/root/.aws/,type=bind,consistency=cached",
+      "source=${localEnv:HOME}${localEnv:USERPROFILE}/.config/gcloud/,target=/root/.config/gcloud/,type=bind,consistency=cached",
+    ]
+  
+    // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+    // "remoteUser": "root"
+  }

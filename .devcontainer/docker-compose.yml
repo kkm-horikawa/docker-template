@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    container_name: offlinecv-uploader-app
+    volumes:
+      - ../..:/workspaces:cached
+
+    command: sleep infinity
+
+    network_mode: service:offlinecv-uploader-db
+
+    environment:
+      - PGPASSWORD=test
+      - PGUSER=test
+      - PGDATABASE=test
+      - PGHOST=offlinecv-uploader-db
+
+    # Use "forwardPorts" in **devcontainer.json** to forward an app port locally.
+    # (Adding the "ports" property to this file will not forward from a Codespace.)
+
+  offlinecv-uploader-db:
+    image: postgres:16
+    container_name: offlinecv-uploader-db
+    restart: unless-stopped
+    volumes:
+      - offlinecv-uploader-db-data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=test
+      - POSTGRES_PASSWORD=test
+      - POSTGRES_DB=test
+
+volumes:
+  offlinecv-uploader-db-data:
+    name: offlinecv-uploader-db-data
