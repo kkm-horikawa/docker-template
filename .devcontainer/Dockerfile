@@ -5,7 +5,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV NVM_DIR=/root/.nvm
 ENV NVM_VERSION=v0.39.7
 ENV NODE_VERSION=22.12.0
-ENV NPM_VERSION=10.9.0
+ENV NPM_VERSION=11.0.0
 ENV TERRAFORM_VERSION=1.9.2
 ENV TERRAFORM_DOCS_VERSION=0.16.0
 ENV TERRAFORMER_VERSION=0.8.24
@@ -25,6 +25,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip \
     vim \
     zsh \
+    zsh-autosuggestions \
+    zsh-syntax-highlighting \
+    bash-completion \
     python${PYTHON_VERSION} \
     python${PYTHON_VERSION}-venv \
     python3-pip \
@@ -34,10 +37,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python${PYTHON_VERSION} 1 \
     && update-alternatives --install /usr/bin/python python /usr/bin/python${PYTHON_VERSION} 1 \
     && python3 -m venv /root/.venv
-
-# venvのアクティベーションを.zshrcと.bashrcに追加
-RUN echo 'source /root/.venv/bin/activate' >> /root/.zshrc \
-    && echo 'source /root/.venv/bin/activate' >> /root/.bashrc
 
 # nvm のインストール
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh | bash \
@@ -58,8 +57,7 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
     && aws --version
 
 # AWS EB CLI のインストール
-RUN . /root/.venv/bin/activate && pip install --no-cache-dir awsebcli
-
+RUN . /root/.venv/bin/activate && pip install --no-cache-dir awsebcli && deactivate
 # uv のインストール
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 
@@ -83,6 +81,17 @@ RUN curl -LO https://github.com/GoogleCloudPlatform/terraformer/releases/downloa
     && mv terraformer-all-linux-amd64 /usr/local/bin/terraformer
 
 # Docker in Docker のセットアップ
+# RUN install -m 0755 -d /etc/apt/keyrings \
+#     && curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc \
+#     && chmod a+r /etc/apt/keyrings/docker.asc \
+#     && echo \
+#     "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
+#     $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+#     tee /etc/apt/sources.list.d/docker.list > /dev/null \
+#     && apt-get update \
+#     && apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+# Docker out side of Docker のセットアップ
 RUN install -m 0755 -d /etc/apt/keyrings \
     && curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc \
     && chmod a+r /etc/apt/keyrings/docker.asc \
@@ -91,7 +100,9 @@ RUN install -m 0755 -d /etc/apt/keyrings \
     $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
     tee /etc/apt/sources.list.d/docker.list > /dev/null \
     && apt-get update \
-    && apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+    && apt-get install -y docker-ce-cli docker-buildx-plugin docker-compose-plugin \
+    && ln -s /usr/libexec/docker/cli-plugins/docker-compose /usr/local/bin/docker-compose \
+    && rm -rf /var/lib/apt/lists/*
 
 # Google Cloud SDK のインストール
 RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list \
@@ -112,22 +123,34 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 # Node.jsとnpmのバージョンを確認
 RUN . $NVM_DIR/nvm.sh && node -v && npm -v
 
-# zsh関連の設定
-RUN echo '# ZSH Configuration' >> /root/.bashrc && \
-    echo '# if [ -x /usr/bin/zsh ]; then' >> /root/.bashrc && \
-    echo '#     exec /usr/bin/zsh -l' >> /root/.bashrc && \
-    echo '# fi' >> /root/.bashrc
+# シェル設定の追加
+RUN echo '# Shell Configuration' >> /root/.bashrc && \
+    echo '# Bash completion settings' >> /root/.bashrc && \
+    echo 'if [ -f /etc/bash_completion ]; then' >> /root/.bashrc && \
+    echo '    . /etc/bash_completion' >> /root/.bashrc && \
+    echo 'fi' >> /root/.bashrc && \
+    echo 'bind "set show-all-if-ambiguous on"' >> /root/.bashrc && \
+    echo 'bind "set completion-ignore-case on"' >> /root/.bashrc && \
+    echo 'PS1="[\u@\h \W]\$ "' >> /root/.bashrc
 
-# zshの設定をzshrcに追加
-RUN echo '# ZSH specific settings' >> /root/.zshrc && \
+# zshの設定
+RUN echo '# ZSH Configuration' >> /root/.zshrc && \
     echo 'export NVM_DIR="$HOME/.nvm"' >> /root/.zshrc && \
     echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> /root/.zshrc && \
     echo 'export PATH="$HOME/.tfenv/bin:$PATH"' >> /root/.zshrc && \
-    echo '# Set zsh options' >> /root/.zshrc && \
-    echo '# setopt autocd' >> /root/.zshrc && \
-    echo '# setopt extended_history' >> /root/.zshrc && \
-    echo '# setopt share_history' >> /root/.zshrc && \
-    echo '# setopt hist_ignore_dups' >> /root/.zshrc && \
-    echo '# bindkey -e' >> /root/.zshrc
+    echo 'autoload -Uz compinit && compinit' >> /root/.zshrc && \
+    echo 'zstyle ":completion:*" menu select' >> /root/.zshrc && \
+    echo 'source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh' >> /root/.zshrc && \
+    echo 'source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh' >> /root/.zshrc && \
+    echo 'PROMPT="%n@%m:%~$ "' >> /root/.zshrc && \
+    echo 'if [[ -n "$VIRTUAL_ENV" ]]; then' >> /root/.zshrc && \
+    echo '    PROMPT="(`basename \"$VIRTUAL_ENV\"`)$PROMPT"' >> /root/.zshrc && \
+    echo 'fi' >> /root/.zshrc && \
+    echo 'setopt autocd' >> /root/.zshrc && \
+    echo 'setopt extended_history' >> /root/.zshrc && \
+    echo 'setopt share_history' >> /root/.zshrc && \
+    echo 'setopt hist_ignore_dups' >> /root/.zshrc && \
+    echo 'bindkey -e' >> /root/.zshrc
 
 SHELL ["/usr/bin/zsh", "-c"]
+
