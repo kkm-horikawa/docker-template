@@ -41,7 +41,7 @@
     "mounts": [
       "source=${localEnv:HOME}${localEnv:USERPROFILE}/.aws/,target=/root/.aws/,type=bind,consistency=cached",
       "source=${localEnv:HOME}${localEnv:USERPROFILE}/.config/gcloud/,target=/root/.config/gcloud/,type=bind,consistency=cached",
-      "source=${localEnv:HOME}${localEnv:USERPROFILE}/.config/gcloud/,target=/root/.config/gcloud/,type=bind,consistency=cached"
+      "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
     ]
   
     // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
