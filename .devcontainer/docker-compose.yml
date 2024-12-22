@@ -1,33 +1,33 @@
 version: "3.8"
 
 services:
-  app:
+  dev:
     build:
-      context: ..
-      dockerfile: .devcontainer/Dockerfile
-    container_name: offlinecv-uploader-app
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: investwise-dev
     volumes:
       - ../..:/workspaces:cached
 
     command: sleep infinity
 
-    network_mode: service:offlinecv-uploader-db
+    network_mode: service:investwise-db
 
     environment:
       - PGPASSWORD=test
       - PGUSER=test
       - PGDATABASE=test
-      - PGHOST=offlinecv-uploader-db
+      - PGHOST=investwise-db
 
     # Use "forwardPorts" in **devcontainer.json** to forward an app port locally.
     # (Adding the "ports" property to this file will not forward from a Codespace.)
 
-  offlinecv-uploader-db:
+  investwise-db:
     image: postgres:16
-    container_name: offlinecv-uploader-db
+    container_name: investwise-db
     restart: unless-stopped
     volumes:
-      - offlinecv-uploader-db-data:/var/lib/postgresql/data
+      - investwise-db-data:/var/lib/postgresql/data
     ports:
       - 5432:5432
     environment:
@@ -36,5 +36,5 @@ services:
       - POSTGRES_DB=test
 
 volumes:
-  offlinecv-uploader-db-data:
-    name: offlinecv-uploader-db-data
+  investwise-db-data:
+    name: investwise-db-data

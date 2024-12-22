@@ -50,11 +50,14 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install
 RUN echo '. $NVM_DIR/nvm.sh' >> /root/.bashrc
 
 # AWS CLI のインストール
-RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
-    && unzip awscliv2.zip \
-    && ./aws/install \
-    && rm -rf awscliv2.zip aws \
-    && aws --version
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+    unzip awscliv2.zip && \
+    ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli && \
+    rm -rf awscliv2.zip aws
+
+# バージョン確認
+RUN aws --version || true
+
 
 # AWS EB CLI のインストール
 RUN . /root/.venv/bin/activate && pip install --no-cache-dir awsebcli && deactivate
@@ -123,34 +126,7 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 # Node.jsとnpmのバージョンを確認
 RUN . $NVM_DIR/nvm.sh && node -v && npm -v
 
-# シェル設定の追加
-RUN echo '# Shell Configuration' >> /root/.bashrc && \
-    echo '# Bash completion settings' >> /root/.bashrc && \
-    echo 'if [ -f /etc/bash_completion ]; then' >> /root/.bashrc && \
-    echo '    . /etc/bash_completion' >> /root/.bashrc && \
-    echo 'fi' >> /root/.bashrc && \
-    echo 'bind "set show-all-if-ambiguous on"' >> /root/.bashrc && \
-    echo 'bind "set completion-ignore-case on"' >> /root/.bashrc && \
-    echo 'PS1="[\u@\h \W]\$ "' >> /root/.bashrc
-
-# zshの設定
-RUN echo '# ZSH Configuration' >> /root/.zshrc && \
-    echo 'export NVM_DIR="$HOME/.nvm"' >> /root/.zshrc && \
-    echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> /root/.zshrc && \
-    echo 'export PATH="$HOME/.tfenv/bin:$PATH"' >> /root/.zshrc && \
-    echo 'autoload -Uz compinit && compinit' >> /root/.zshrc && \
-    echo 'zstyle ":completion:*" menu select' >> /root/.zshrc && \
-    echo 'source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh' >> /root/.zshrc && \
-    echo 'source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh' >> /root/.zshrc && \
-    echo 'PROMPT="%n@%m:%~$ "' >> /root/.zshrc && \
-    echo 'if [[ -n "$VIRTUAL_ENV" ]]; then' >> /root/.zshrc && \
-    echo '    PROMPT="(`basename \"$VIRTUAL_ENV\"`)$PROMPT"' >> /root/.zshrc && \
-    echo 'fi' >> /root/.zshrc && \
-    echo 'setopt autocd' >> /root/.zshrc && \
-    echo 'setopt extended_history' >> /root/.zshrc && \
-    echo 'setopt share_history' >> /root/.zshrc && \
-    echo 'setopt hist_ignore_dups' >> /root/.zshrc && \
-    echo 'bindkey -e' >> /root/.zshrc
+COPY ./config/.bashrc /root/.bashrc
+COPY ./config/.zshrc /root/.zshrc
 
 SHELL ["/usr/bin/zsh", "-c"]
-
