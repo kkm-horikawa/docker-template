@@ -5,36 +5,31 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
-    container_name: investwise-dev
+      target: ${BUILD_TARGET:-development}  # デフォルトはfull development環境
+    container_name: wantedly-dev
     volumes:
       - ../..:/workspaces:cached
-
     command: sleep infinity
-
-    network_mode: service:investwise-db
-
+    network_mode: service:wantedly-db
     environment:
-      - PGPASSWORD=test
-      - PGUSER=test
-      - PGDATABASE=test
-      - PGHOST=investwise-db
+      - PGPASSWORD=wantedly
+      - PGUSER=wantedly
+      - PGDATABASE=wantedly
+      - PGHOST=wantedly-db
 
-    # Use "forwardPorts" in **devcontainer.json** to forward an app port locally.
-    # (Adding the "ports" property to this file will not forward from a Codespace.)
-
-  investwise-db:
+  wantedly-db:
     image: postgres:16
-    container_name: investwise-db
+    container_name: wantedly-db
     restart: unless-stopped
     volumes:
-      - investwise-db-data:/var/lib/postgresql/data
+      - wantedly-db-data:/var/lib/postgresql/data
     ports:
-      - 5432:5432
+      - 50010:5432
     environment:
-      - POSTGRES_USER=test
-      - POSTGRES_PASSWORD=test
-      - POSTGRES_DB=test
+      - POSTGRES_USER=wantedly
+      - POSTGRES_PASSWORD=wantedly
+      - POSTGRES_DB=wantedly
 
 volumes:
-  investwise-db-data:
-    name: investwise-db-data
+  wantedly-db-data:
+    name: wantedly-db-data
