@@ -1,5 +1,5 @@
 {
-    "name": "investwise",
+    "name": "monelite",
     "dockerComposeFile": "docker-compose.yml",
     "service": "dev",
     "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",

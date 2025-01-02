@@ -5,19 +5,32 @@ docker rmi $(docker images -q) -f 2>/dev/null; \
 docker volume rm $(docker volume ls -q) 2>/dev/null; \
 docker network rm $(docker network ls -q) 2>/dev/null; \
 echo "Docker cleanup completed!"'
+
+# Path settings
 export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 export PATH="$HOME/.tfenv/bin:$PATH"
-autoload -Uz compinit && compinit
-zstyle ":completion:*" menu select
-source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
-PROMPT="%n@%m:%~$ "
-if [[ -n "$VIRTUAL_ENV" ]]; then
-    PROMPT="(`basename \"$VIRTUAL_ENV\"`)$PROMPT"
-fi
+
+# ZSH completion
+autoload -Uz compinit
+compinit
+
+# ZSH style
+zstyle ':completion:*' menu select
+
+# Plugins
+[ -f /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ] && source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+[ -f /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh ] && source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+
+# Prompt
+PROMPT='%n@%m:%~$ '
+[ -n "$VIRTUAL_ENV" ] && PROMPT="($(basename "$VIRTUAL_ENV"))$PROMPT"
+
+# Options
 setopt autocd
 setopt extended_history
 setopt share_history
 setopt hist_ignore_dups
+
+# Key bindings
 bindkey -e

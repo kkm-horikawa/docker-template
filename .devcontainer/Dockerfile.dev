@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     zsh \
     zsh-autosuggestions \
     zsh-syntax-highlighting \
+    dos2unix \
     bash-completion \
     postgresql-client \
     && rm -rf /var/lib/apt/lists/*
@@ -120,6 +121,8 @@ RUN apt-get update && apt-get install -y neofetch \
 # Setup shell configuration
 COPY ./config/.bashrc /root/.bashrc
 COPY ./config/.zshrc /root/.zshrc
+RUN dos2unix /root/.zshrc /root/.bashrc \
+    && chmod 644 /root/.zshrc /root/.bashrc
 
 WORKDIR /workspace
 SHELL ["/usr/bin/zsh", "-c"]
