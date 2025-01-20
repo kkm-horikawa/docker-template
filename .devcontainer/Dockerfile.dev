@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     zsh \
     zsh-autosuggestions \
     zsh-syntax-highlighting \
+    dos2unix \
     bash-completion \
     postgresql-client \
     && rm -rf /var/lib/apt/lists/*
@@ -35,6 +36,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && update-alternatives --install /usr/bin/python python /usr/bin/python${PYTHON_VERSION} 1 \
     && python3 -m venv /root/.venv
 
+# Chrome stage
+FROM base as chrome
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    wget \
+    xvfb \
+    libxi6 \
+    libgconf-2-4 \
+    && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list \
+    && apt-get update \
+    && apt-get install -y google-chrome-stable \
+    && rm -rf /var/lib/apt/lists/*
+
 # Node.js stage
 FROM base as node
 ENV NVM_DIR=/root/.nvm
@@ -49,7 +63,7 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install
     && nvm use default \
     && npm install -g npm@${NPM_VERSION}
 
-# AWS stage - Pythonステージを基にする
+# AWS stage
 FROM python as aws
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
     unzip awscliv2.zip && \
@@ -111,6 +125,7 @@ COPY --from=aws / /
 COPY --from=terraform / /
 COPY --from=docker / /
 COPY --from=gcloud / /
+COPY --from=chrome / /
 
 # Install additional tools
 RUN apt-get update && apt-get install -y neofetch \
@@ -120,6 +135,8 @@ RUN apt-get update && apt-get install -y neofetch \
 # Setup shell configuration
 COPY ./config/.bashrc /root/.bashrc
 COPY ./config/.zshrc /root/.zshrc
+RUN dos2unix /root/.zshrc /root/.bashrc \
+    && chmod 644 /root/.zshrc /root/.bashrc
 
 WORKDIR /workspace
 SHELL ["/usr/bin/zsh", "-c"]

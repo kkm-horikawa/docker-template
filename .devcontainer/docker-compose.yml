@@ -1,4 +1,5 @@
-version: "3.8"
+name: develop
+version: '3'
 
 services:
   dev:
@@ -6,30 +7,37 @@ services:
       context: .
       dockerfile: Dockerfile.dev
       target: ${BUILD_TARGET:-development}  # デフォルトはfull development環境
-    container_name: wantedly-dev
+    container_name: develop-dev
     volumes:
       - ../..:/workspaces:cached
     command: sleep infinity
-    network_mode: service:wantedly-db
+    networks:
+      - develop-network
     environment:
-      - PGPASSWORD=wantedly
-      - PGUSER=wantedly
-      - PGDATABASE=wantedly
-      - PGHOST=wantedly-db
+      - PGPASSWORD=develop
+      - PGUSER=develop
+      - PGDATABASE=develop
+      - PGHOST=develop-db
 
-  wantedly-db:
+  develop-db:
     image: postgres:16
-    container_name: wantedly-db
+    container_name: develop-db
     restart: unless-stopped
     volumes:
-      - wantedly-db-data:/var/lib/postgresql/data
+      - develop-db-data:/var/lib/postgresql/data
     ports:
-      - 50010:5432
+      - 50015:5432
     environment:
-      - POSTGRES_USER=wantedly
-      - POSTGRES_PASSWORD=wantedly
-      - POSTGRES_DB=wantedly
+      - POSTGRES_USER=develop
+      - POSTGRES_PASSWORD=develop
+      - POSTGRES_DB=develop
+    networks:
+      - develop-network
 
 volumes:
-  wantedly-db-data:
-    name: wantedly-db-data
+  develop-db-data:
+    name: develop-db-data
+
+networks:
+  develop-network:
+    name: develop-network
