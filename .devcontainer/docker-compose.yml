@@ -1,4 +1,5 @@
-version: "3.8"
+name: develop
+version: '3'
 
 services:
   dev:
@@ -6,30 +7,37 @@ services:
       context: .
       dockerfile: Dockerfile.dev
       target: ${BUILD_TARGET:-development}  # デフォルトはfull development環境
-    container_name: monelite-dev
+    container_name: develop-dev
     volumes:
       - ../..:/workspaces:cached
     command: sleep infinity
-    network_mode: service:monelite-db
+    networks:
+      - develop-network
     environment:
-      - PGPASSWORD=monelite
-      - PGUSER=monelite
-      - PGDATABASE=monelite
-      - PGHOST=monelite-db
+      - PGPASSWORD=develop
+      - PGUSER=develop
+      - PGDATABASE=develop
+      - PGHOST=develop-db
 
-  monelite-db:
+  develop-db:
     image: postgres:16
-    container_name: monelite-db
+    container_name: develop-db
     restart: unless-stopped
     volumes:
-      - monelite-db-data:/var/lib/postgresql/data
+      - develop-db-data:/var/lib/postgresql/data
     ports:
-      - 50010:5432
+      - 50015:5432
     environment:
-      - POSTGRES_USER=monelite
-      - POSTGRES_PASSWORD=monelite
-      - POSTGRES_DB=monelite
+      - POSTGRES_USER=develop
+      - POSTGRES_PASSWORD=develop
+      - POSTGRES_DB=develop
+    networks:
+      - develop-network
 
 volumes:
-  monelite-db-data:
-    name: monelite-db-data
+  develop-db-data:
+    name: develop-db-data
+
+networks:
+  develop-network:
+    name: develop-network

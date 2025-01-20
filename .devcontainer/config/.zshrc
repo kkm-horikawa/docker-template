@@ -1,4 +1,7 @@
 # ZSH Configuration
+alias pg_restore_clean='pg_restore --clean --no-owner --no-privileges --no-acl -d topiccluster backup.dump'
+alias pg_backup='pg_dump -Fc -h topicclustersmedia2.cjciin3tcl9j.ap-northeast-1.rds.amazonaws.com -d ebdb -U yauwe1js2q9s97zz -W > backup.dump'
+
 alias docker-clean='docker stop $(docker ps -aq) 2>/dev/null; \
 docker rm $(docker ps -aq) 2>/dev/null; \
 docker rmi $(docker images -q) -f 2>/dev/null; \
